@@ -47,3 +47,30 @@ and sending it to the user
 
 ! If you omit the host (like we did with ":4000") then the server will listen on all
 your computer’s available network interfaces. 
+
+### Fixed path and subtree patterns
+Now that the two new routes are up and running let’s talk a bit of theory.
+Go’s servemux supports two different types of URL patterns: fixed paths and subtree paths.
+Fixed paths don’t end with a trailing slash, whereas subtree paths do end with a trailing slash.
+Our two new patterns — "/snippet/view" and "/snippet/create" — are both examples of
+fixed paths. In Go’s servemux, fixed path patterns like these are only matched (and the
+corresponding handler called) when the request URL path exactly matches the fixed path.
+In contrast, our pattern "/" is an example of a subtree path (because it ends in a trailing
+slash). Another example would be something like "/static/". Subtree path patterns are
+matched (and the corresponding handler called) whenever the start of a request URL path
+matches the subtree path. If it helps your understanding, you can think of subtree paths as
+acting a bit like they have a wildcard at the end, like "/**" or "/static/**".
+This helps explain why the "/" pattern is acting like a catch-all. The pattern essentially means
+match a single slash, followed by anything (or nothing at all)
+
+#### DefaultServeMux
+Because DefaultServeMux is a global variable, any package can access it and register a route
+— including any third-party packages that your application imports. If one of those third-
+party packages is compromised, they could use DefaultServeMux to expose a malicious
+handler to the web
+
+- If you don’t call w.WriteHeader() explicitly, then the first call to w.Write() will automatically send a 200 OK status code to the user. So, if you want to send a non-200 status code, you must call w.WriteHeader() before any call to w.Write().
+
+- http.Error() shortcut. This is a
+lightweight helper function which takes a given message and status code, then calls the
+w.WriteHeader() and w.Write() methods behind-the-scenes for us.

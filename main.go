@@ -8,6 +8,10 @@ import (
 // Define a home handler function which writes a byte slice containing
 // "Hello from Snippetbox" as the response body.
 func home(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
@@ -17,8 +21,15 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 }
 // Add a snippetCreate handler function.
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "Post" {
+		w.Header().Set("Allow", http.MethodPost)
+		// w.WriteHeader(405)
+		// w.Write([]byte("Method Not Allowed"))
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed) 
+		// this function is an equivalent to the previous two functions
+		return 
+	}
 	w.Write([]byte("Create a new snippet..."))
-	w.Write([]byte(r.Proto))
 }
 
 func main() {
