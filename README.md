@@ -3,6 +3,52 @@
 Quick reference guide for concepts, patterns, and best practices
 
 ---
+## Table of Contents
+
+- [Module Paths & Naming Convention](#module-paths--naming-convention)
+  - [Module Path Basics](#module-path-basics)
+  - [Naming Guidelines](#naming-guidelines)
+- [Running Go](#running-go)
+  - [Equivalent Commands](#equivalent-commands)
+- [Networking Fundamentals](#networking-fundamentals)
+  - [Network Addresses](#network-addresses)
+- [HTTP Architecture Components](#http-architecture-components)
+  - [Controllers](#controllers)
+  - [Router (ServeMux)](#router-servemux)
+  - [Web Server](#web-server)
+  - [HTTP ResponseWriter](#http-responsewriter)
+- [URL Pattern Matching](#url-pattern-matching)
+  - [Two Pattern Types](#two-pattern-types)
+- [DefaultServeMux](#defaultservemux)
+- [HTTP Response Headers & Status Codes](#http-response-headers--status-codes)
+  - [Writing Response Headers](#writing-response-headers)
+  - [HTTP Error Helper Function](#http-error-helper-function)
+- [File Serving & Security](#file-serving--security)
+  - [Serving Static Files with http.ServeFile()](#serving-static-files-with-httpservefile)
+- [Concurrency & Race Conditions](#concurrency--race-conditions)
+  - [Request Handling](#request-handling)
+- [Managing Configuration Settings](#managing-configuration-settings)
+  - [Command-Line Flags](#command-line-flags)
+  - [Port Restrictions](#port-restrictions)
+- [Alternative Configuration Methods](#alternative-configuration-methods)
+  - [Environment Variables](#environment-variables)
+- [Configuration Structs with flag.StringVar()](#configuration-structs-with-flagstringvar)
+  - [Pre-Existing Variable Pattern](#pre-existing-variable-pattern)
+  - [Available Var Functions](#available-var-functions)
+  - [Benefits](#benefits)
+- [Logging](#logging)
+  - [Leveled Logging](#leveled-logging)
+  - [Logging Methods Reference](#logging-methods-reference)
+  - [Decoupled Logging](#decoupled-logging)
+  - [Concurrent Logging](#concurrent-logging)
+  - [Logging to a File](#logging-to-a-file)
+- [Dependency Injection](#dependency-injection)
+  - [Overview](#overview)
+  - [Single Package Pattern (Recommended)](#single-package-pattern-recommended)
+  - [Multi-Package Pattern (Closures)](#multi-package-pattern-closures)
+  - [Pattern Comparison](#pattern-comparison)
+- [Quick Reference Checklist](#quick-reference-checklist)
+
 
 ## Module Paths & Naming Convention
 
