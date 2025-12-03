@@ -50,6 +50,8 @@ Quick reference guide for concepts, patterns, and best practices
 - [Quick Reference Checklist](#quick-reference-checklist)
 
 
+---
+
 ## Module Paths & Naming Convention
 
 ### Module Path Basics
