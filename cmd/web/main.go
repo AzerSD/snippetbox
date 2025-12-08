@@ -1,7 +1,8 @@
 package main
 
 import (
-	"database/sql" // New import
+	"database/sql"
+	"html/template" 
 	"flag"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 	snippets *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -33,14 +35,19 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	// We also defer a call to db.Close(), so that the connection pool is closed
-	// before the main() function exits.
+
 	defer db.Close()
+
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		snippets: &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
