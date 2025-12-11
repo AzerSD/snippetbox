@@ -31,7 +31,6 @@ func (app *application) notFound(w http.ResponseWriter) {
 // provided name, then create a new error and call the serverError() helper
 // method that we made earlier and return.
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
-
 	ts, ok := app.templateCache[page]
 	if !ok {
 		err := fmt.Errorf("the template %s does not exist", page)
@@ -39,14 +38,16 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		return
 	}
 
-	// Write out the provided HTTP status code ('200 OK', '400 Bad Request'
-	// etc).
-	w.WriteHeader(status)
-
-	// Execute the template set and write the response body. Again, if there
-	// is any error we call the the serverError() helper.
-	err := ts.ExecuteTemplate(w, "base", data)
+	buf := new(bytes.Buffer)
+	// Write the template to the buffer, instead of straight to the
+	// http.ResponseWriter. If there's an error, call our serverError() helper
+	// and then return.
+	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	w.WriteHeader(status)
+	buf.WriteTo(w)
 }
