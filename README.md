@@ -652,6 +652,38 @@ func ExampleHandler(app *config.Application) http.HandlerFunc {
 
 ---
 
+## Advanced routing
+There a literally hundreds of third-party routers for Go to pick from. And (fortunately or
+unfortunately, depending on your perspective) they all work a bit differently. They have
+different APIs, different logic for matching routes, and different behavioral quirks.
+#### 3 Routers Recommended by Alex are
+- **julienschmidt/httprouter** is the most focused, lightweight and fastest of the three
+packages, and is about as close to ‘perfect’ as any third-party router gets in terms of its
+compliance with the HTTP specs. It automatically handles OPTIONS requests and sends
+405 responses correctly, and allows you to set custom handlers for 404 and 405 responses
+too.
+
+- **go-chi/chi** is generally similar to httprouter in terms of its features, with the main
+differences being that it also supports regexp route patterns and ‘grouping’ of routes
+which use specific middleware. This route grouping feature is really valuable in larger
+applications where you have lots routes and middleware to manage.
+Two downsides of chi are that it doesn’t automatically handle OPTIONS requests, and it
+doesn’t set an Allow header in 405 responses.
+
+- **gorilla/mux** is the most full-featured of the three routers. It supports regexp route
+patterns, and allows you to route requests based on scheme, host and headers. It’s also
+the only one to support custom routing rules and route ‘reversing’ (like you get in Django,
+Rails or Laravel)
+The main downside of gorilla/mux is that it’s comparatively slow and memory hungry —
+although for a database-driven web application like ours the impact over the lifetime of a
+whole HTTP request is likely to be small. Like chi, it also doesn’t automatically handle
+OPTIONS requests, and it doesn’t set an Allow header in 405 responses.
+
+[Which Go router should I use?](https://www.alexedwards.net/blog/which-go-router-should-i-use)
+
+
+
+--- 
 ## Quick Reference Checklist
 
 - [ ] Module path matches project repository URL
