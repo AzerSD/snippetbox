@@ -12,6 +12,11 @@ import (
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
 
+	// Over writing the default NotFound by our own app.notFound
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.notFound(w)
+	})
+
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
