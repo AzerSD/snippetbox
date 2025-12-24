@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"snippetbox.azersd.me/internal/models"
 	"snippetbox.azersd.me/internal/validator"
@@ -102,7 +100,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
+		app.render(w, http.StatusUnprocessableEntity, "create.tmpl.html", data)
 		return
 	}
 
