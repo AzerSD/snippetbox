@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"crypto/tls"
 
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.azersd.me/internal/models"
@@ -23,6 +24,10 @@ type application struct {
 	snippets *models.SnippetModel
 	templateCache map[string]*template.Template
 	sessionManager *scs.SessionManager
+}
+
+tlsConfig := &tls.Config{
+	CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 }
 
 func main() {
@@ -66,6 +71,11 @@ func main() {
 		Addr:     *addr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
+		TLSConfig: tlsConfig,
+		IdleTimeout: time.Minute,
+		ReadTimeout: 5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		MaxHeaderBytes: 524288,
 	}
 
 	// Write messages using the two new loggers, instead of the standard logger.
