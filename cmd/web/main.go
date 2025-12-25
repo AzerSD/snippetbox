@@ -26,9 +26,7 @@ type application struct {
 	sessionManager *scs.SessionManager
 }
 
-tlsConfig := &tls.Config{
-	CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-}
+
 
 func main() {
 
@@ -65,6 +63,10 @@ func main() {
 		snippets: &models.SnippetModel{DB: db},
 		templateCache: templateCache,
 		sessionManager: sessionManager,
+	}
+
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
 	srv := &http.Server{
