@@ -7,9 +7,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.azersd.me/internal/models"
+
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2" 
 
 )
 
@@ -18,6 +22,7 @@ type application struct {
 	errorLog *log.Logger
 	snippets *models.SnippetModel
 	templateCache map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -43,11 +48,20 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// Use the scs.New() function to initialize a new session manager. Then we
+	// configure it to use our MySQL database as the session store, and set a
+	// lifetime of 12 hours (so that sessions automatically expire 12 hours
+	// after first being created).
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		snippets: &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		sessionManager: sessionManager,
 	}
 
 	srv := &http.Server{
@@ -69,6 +83,7 @@ func openDB(dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
