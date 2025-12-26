@@ -9,6 +9,7 @@ import (
 	"snippetbox.azersd.me/internal/models"
 	"snippetbox.azersd.me/internal/validator"
 	"github.com/julienschmidt/httprouter"
+	"github.com/go-playground/form/v4"
 )
 
 
@@ -67,33 +68,26 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type snippetCreateForm struct {
-	Title string
-	Content string
-	Expires int
-	validator.Validator
+	Title string `form:"title"`
+	Content string `form:"content"`
+	Expires int `form:"expires"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	form := snippetCreateForm {
-		Title: r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: expires,
-		// Remove the FieldErrors assignment from here.
-	}
+	var form snippetCreateForm
 
+	err = app.formDecoder.Decode(&form, r.PostForm)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
 	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
@@ -102,7 +96,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, "create.tmpl.html", data)
+		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 	}
 
@@ -111,17 +105,63 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.serverError(w, err)
 		return
 	}
-
-	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
-
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
+// Create a new decodePostForm() helper method. The second parameter here, dst,
+// is the target destination that we want to decode the form data into.
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+		return err
+	}
+	return nil
+}
+
+type userSignupForm struct {
+	Name string `form:"name"`
+	Email string `form:"email"`
+	Password string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display a HTML form for signing up a new user...")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, http.StatusOK, "signup.tmpl.html", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
+	var form userSignupForm
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
+	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(validator.Matches(form.Email, validator.EmailRX), "email", "This field must be a valid email address")
+	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
+	form.CheckField(validator.MinChars(form.Password, 8), "password", "This field must be at least 8 characters long")
+
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		return
+	}
+	// Otherwise send the placeholder response (for now!).
 	fmt.Fprintln(w, "Create a new user...")
 }
 

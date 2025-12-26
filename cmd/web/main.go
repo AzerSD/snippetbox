@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.azersd.me/internal/models"
+	"github.com/go-playground/form/v4"
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2" 
@@ -19,11 +20,13 @@ import (
 )
 
 type application struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	snippets *models.SnippetModel
-	templateCache map[string]*template.Template
-	sessionManager *scs.SessionManager
+	infoLog 	*log.Logger
+	errorLog	*log.Logger
+	snippets	*models.SnippetModel
+	users		*models.UserModel
+	templateCache	map[string]*template.Template
+	sessionManager	*scs.SessionManager
+	formDecoder		*form.Decoder
 }
 
 
@@ -56,13 +59,16 @@ func main() {
 	sessionManager.Lifetime = 12 * time.Hour
 
 	sessionManager.Cookie.Secure = true
+	formDecoder := form.NewDecoder()
 
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		snippets: &models.SnippetModel{DB: db},
+		users: &models.UserModel{DB: db},
 		templateCache: templateCache,
 		sessionManager: sessionManager,
+		formDecoder: formDecoder,
 	}
 
 	tlsConfig := &tls.Config{
